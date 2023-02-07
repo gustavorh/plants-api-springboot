@@ -71,23 +71,31 @@ public class PlantController {
             @PathVariable("id") Integer id,
             @RequestBody Plant p
     ) {
+        /*
+         * This first part of the code will create a new Optional (as we don't know if the end-user will provide a valid ID for a plant) which will contain the
+         * plant with the provided ID, if a plant is not found with said ID the application will end early returning a null statement as the plant couldn't be found.
+         */
         Optional<Plant> plantToUpdateOptional = this.plantRepository.findById(id);
         if (!plantToUpdateOptional.isPresent()) {
             return null;
         }
+
+        /*
+         * In the case of a plant was found with the provided ID, we call the get() method to retrieve its information and assigning it to a new local variable called 'plantToUpdate'.
+         * With this, we can later check if the passed object in the body of the request contains specific properties of the main object (Plant) and if it does, call their respective
+         * getters and setters to retrieve and assign their respective information passed by the object.
+         */
         Plant plantToUpdate = plantToUpdateOptional.get();
-        if (p.getHasFruit() != null) {
-            plantToUpdate.setHasFruit(p.getHasFruit());
-        }
-        if (p.getQuantity() != null) {
-            plantToUpdate.setQuantity(p.getQuantity());
-        }
-        if (p.getName() != null) {
-            plantToUpdate.setName(p.getName());
-        }
-        if (p.getWateringFrequency() != null) {
-            plantToUpdate.setWateringFrequency(p.getWateringFrequency());
-        }
+        if (p.getHasFruit() != null) { plantToUpdate.setHasFruit(p.getHasFruit()); }
+        if (p.getQuantity() != null) { plantToUpdate.setQuantity(p.getQuantity()); }
+        if (p.getName() != null) { plantToUpdate.setName(p.getName()); }
+        if (p.getWateringFrequency() != null) { plantToUpdate.setWateringFrequency(p.getWateringFrequency()); }
+
+        /*
+         * Once the plant has been updated with the respective data, we can save this new updated plant to the database.
+         * Even though the 'updatedPlant' is redundant in this case, as we can just return the with the whole save() method,
+         * I decided to keep the variable in order to see more clearly what is being done in the execution of the code.
+         */
         Plant updatedPlant = this.plantRepository.save(plantToUpdate);
         return updatedPlant;
     }
@@ -100,12 +108,17 @@ public class PlantController {
      */
     @DeleteMapping("/plants/{id}")
     public Plant deletePlant(@PathVariable("id") Integer id) {
+        /*
+         * Same case as before, we create a new Optional for in the case a plant with specified ID does not exist and in the event of a plant is not found
+         * we end the application early returning a null statement.
+         */
         Optional<Plant> plantToDeleteOptional = this.plantRepository.findById(id);
         if (!plantToDeleteOptional.isPresent()) {
             return null;
         }
         Plant plantToDelete = plantToDeleteOptional.get();
         this.plantRepository.delete(plantToDelete);
+
         return plantToDelete;
     }
 }
