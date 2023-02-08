@@ -1,6 +1,8 @@
 package me.gustavorh.plants.controllers;
 
 import java.lang.Iterable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +18,8 @@ import me.gustavorh.plants.repositories.PlantRepository;
 public class PlantController {
 
     /**
-     *  Instantiation of the "Plant" repository for later use. With this initial instantiation
-     *  we can access all CRUD methods (@link me.gustavorh.plants.repositories.PlantRepository).
+     * Instantiation of the "Plant" repository for later use. With this initial instantiation
+     * we can access all CRUD methods (@link me.gustavorh.plants.repositories.PlantRepository).
      */
     private final PlantRepository plantRepository;
 
@@ -63,7 +65,7 @@ public class PlantController {
      * A plant object is also required as a parameter in order to update said plant.
      *
      * @param id
-     * @param p (Plant object)
+     * @param p  (Plant object)
      * @return Plant object updated
      */
     @PutMapping("/plants/{id}")
@@ -86,10 +88,18 @@ public class PlantController {
          * getters and setters to retrieve and assign their respective information passed by the object.
          */
         Plant plantToUpdate = plantToUpdateOptional.get();
-        if (p.getHasFruit() != null) { plantToUpdate.setHasFruit(p.getHasFruit()); }
-        if (p.getQuantity() != null) { plantToUpdate.setQuantity(p.getQuantity()); }
-        if (p.getName() != null) { plantToUpdate.setName(p.getName()); }
-        if (p.getWateringFrequency() != null) { plantToUpdate.setWateringFrequency(p.getWateringFrequency()); }
+        if (p.getHasFruit() != null) {
+            plantToUpdate.setHasFruit(p.getHasFruit());
+        }
+        if (p.getQuantity() != null) {
+            plantToUpdate.setQuantity(p.getQuantity());
+        }
+        if (p.getName() != null) {
+            plantToUpdate.setName(p.getName());
+        }
+        if (p.getWateringFrequency() != null) {
+            plantToUpdate.setWateringFrequency(p.getWateringFrequency());
+        }
 
         /*
          * Once the plant has been updated with the respective data, we can save this new updated plant to the database.
@@ -120,5 +130,41 @@ public class PlantController {
         this.plantRepository.delete(plantToDelete);
 
         return plantToDelete;
+    }
+
+    /**
+     * API Mapping (GET Type) to search with custom queries.
+     *
+     * @param hasFruit
+     * @param quantity
+     * @return
+     */
+    @GetMapping("/plants/search")
+    /*
+     * We have defined both params as non-required as our application has custom methods to handle whether one or both params are passed in the query.
+     */
+    public List<Plant> searchPlants(
+            @RequestParam(name = "hasFruit", required = false) Boolean hasFruit,
+            @RequestParam(name = "maxQuantity", required = false) Integer quantity
+    ) {
+        /*
+         * Depending on the query, the application will handle all kind of queries passed as params, even if one or both params are passed.
+         */
+        if (hasFruit != null && quantity != null && hasFruit) {
+            return this.plantRepository.findByHasFruitTrueAndQuantityLessThan(quantity);
+        }
+        if (hasFruit != null && quantity != null && !hasFruit) {
+            return this.plantRepository.findByHasFruitFalseAndQuantityLessThan(quantity);
+        }
+        if (hasFruit != null && hasFruit) {
+            return this.plantRepository.findByHasFruitTrue();
+        }
+        if (hasFruit != null && !hasFruit) {
+            return this.plantRepository.findByHasFruitFalse();
+        }
+        if (quantity != null) {
+            return this.plantRepository.findByQuantityLessThan(quantity);
+        }
+        return new ArrayList<>();
     }
 }
